@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Moon, Sun } from "lucide-react";
+import { Loader2, Moon, Plus, Sun, Trash2 } from "lucide-react";
 
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
@@ -25,20 +25,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { useAuthStore } from "@/store/authStore";
 import { useThemeStore } from "@/store/themeStore";
-
-const rolePermissions = [
-  { role: "Admin", access: "Full access to all modules, billing, and settings", members: 2 },
-  { role: "Doctor", access: "Patients, appointments, prescriptions, own schedule", members: 6 },
-  { role: "Nurse", access: "Patients, appointments (view only), prescriptions (view)", members: 8 },
-  { role: "Receptionist", access: "Appointments, patients (basic info), billing (view)", members: 3 },
-];
+import { useRoleStore } from "@/store/roleStore";
+import type { Permission } from "@/types/permissions";
+import type { RolePermissionConfig } from "@/types/roles";
+import { RoleManageDialog } from "@/components/settings/role-manage-dialog";
 
 export default function SettingsPage() {
   const user = useAuthStore((s) => s.user);
   const theme = useThemeStore((s) => s.theme);
   const setTheme = useThemeStore((s) => s.setTheme);
+  const roles = useRoleStore((s) => s.roles);
+  const addRole = useRoleStore((s) => s.addRole);
+  const deleteRole = useRoleStore((s) => s.deleteRole);
+  const updateRolePermissions = useRoleStore((s) => s.updateRolePermissions);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [activeRole, setActiveRole] = useState<RolePermissionConfig | null>(null);
+  const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
+  const [newRoleName, setNewRoleName] = useState("");
+  const [newRoleDescription, setNewRoleDescription] = useState("");
   const [notifications, setNotifications] = useState({
     emailReminders: true,
     smsReminders: true,
@@ -53,12 +58,63 @@ export default function SettingsPage() {
     .slice(0, 2)
     .join("")
     .toUpperCase();
+  const canCustomizeRolePermissions = true;
 
   const handleSave = async (section: string) => {
     setIsSaving(true);
     await new Promise((r) => setTimeout(r, 700));
     setIsSaving(false);
     toast.success(`${section} settings saved`);
+  };
+
+  const openManageDialog = (role: RolePermissionConfig) => {
+    setActiveRole(role);
+    setIsManageDialogOpen(true);
+  };
+
+  const handleRolePermissionSave = (permissions: Permission[]) => {
+    if (!activeRole || !canCustomizeRolePermissions) {
+      toast.error("You cannot customize role permissions");
+      return;
+    }
+
+    updateRolePermissions(activeRole.id, permissions);
+    toast.success(`${activeRole.name} permissions updated`);
+  };
+
+  const handleAddRole = () => {
+    const trimmedRoleName = newRoleName.trim();
+
+    if (!trimmedRoleName) {
+      toast.error("Role name is required");
+      return;
+    }
+
+    const roleNameExists = roles.some(
+      (role) => role.name.toLowerCase() === trimmedRoleName.toLowerCase()
+    );
+
+    if (roleNameExists) {
+      toast.error("Role name already exists");
+      return;
+    }
+
+    addRole({ name: trimmedRoleName, description: newRoleDescription });
+    setNewRoleName("");
+    setNewRoleDescription("");
+    toast.success(`${trimmedRoleName} role created`);
+  };
+
+  const handleDeleteRole = (role: RolePermissionConfig) => {
+    const confirmed = window.confirm(`Delete "${role.name}" role?`);
+    if (!confirmed) return;
+
+    deleteRole(role.id);
+    if (activeRole?.id === role.id) {
+      setIsManageDialogOpen(false);
+      setActiveRole(null);
+    }
+    toast.success(`${role.name} role deleted`);
   };
 
   return (
@@ -207,27 +263,82 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Roles & permissions</CardTitle>
-              <CardDescription>Overview of access levels across your clinic staff.</CardDescription>
+              <CardDescription>
+                Create your own roles and choose permissions with checkboxes.
+              </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              <div className="rounded-lg border p-4 space-y-3">
+                <p className="text-sm font-medium">Add custom role</p>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
+                  <Input
+                    placeholder="Role name (e.g. Doctor)"
+                    value={newRoleName}
+                    onChange={(e) => setNewRoleName(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Description (optional)"
+                    value={newRoleDescription}
+                    onChange={(e) => setNewRoleDescription(e.target.value)}
+                  />
+                  <Button onClick={handleAddRole} className="sm:w-auto">
+                    <Plus className="size-4" />
+                    Add role
+                  </Button>
+                </div>
+              </div>
+
+              {roles.length === 0 && (
+                <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+                  No roles added yet. Create a role with the + button and then set permissions.
+                </div>
+              )}
+
               <ul className="divide-y divide-border">
-                {rolePermissions.map((r) => (
-                  <li key={r.role} className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
+                {roles.map((r) => (
+                  <li key={r.id} className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-foreground">{r.role}</p>
-                        <Badge variant="secondary">{r.members} members</Badge>
+                        <p className="text-sm font-medium text-foreground">{r.name}</p>
+                        <Badge variant="secondary">{r.permissions.length} permissions</Badge>
                       </div>
-                      <p className="mt-0.5 text-sm text-muted-foreground">{r.access}</p>
+                      <p className="mt-0.5 text-sm text-muted-foreground">
+                        {r.description || "No description provided"}
+                      </p>
                     </div>
-                    <Button variant="outline" size="sm" className="shrink-0">
-                      Manage
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0"
+                        onClick={() => openManageDialog(r)}
+                      >
+                        {canCustomizeRolePermissions ? "Manage" : "View"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleDeleteRole(r)}
+                        aria-label={`Delete ${r.name}`}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
                   </li>
                 ))}
               </ul>
             </CardContent>
           </Card>
+          <RoleManageDialog
+            open={isManageDialogOpen}
+            role={activeRole}
+            canEdit={canCustomizeRolePermissions}
+            onClose={() => {
+              setIsManageDialogOpen(false);
+              setActiveRole(null);
+            }}
+            onSave={handleRolePermissionSave}
+          />
         </TabsContent>
 
         {/* Notifications */}
