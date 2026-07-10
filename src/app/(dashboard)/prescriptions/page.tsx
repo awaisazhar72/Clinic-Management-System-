@@ -1,149 +1,355 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { type ColumnDef } from "@tanstack/react-table";
-import { Eye, FileText, Plus, Printer } from "lucide-react";
+import {
+  ClipboardList,
+  History,
+  LayoutGrid,
+  MessageCircle,
+  Pill,
+  Printer,
+  User,
+} from "lucide-react";
+import { toast } from "sonner";
 
 import { PageHeader } from "@/components/common/page-header";
-import { SearchBar } from "@/components/common/search-bar";
-import { DataTable } from "@/components/tables/data-table";
-import { PrescriptionFormDialog } from "@/components/forms/prescription-form-dialog";
-import { PrescriptionViewDialog } from "@/components/modals/prescription-view-dialog";
+import { PrescriptionPreview } from "@/components/dashboard/prescription-preview";
+import { PrescriptionLayoutDialog } from "@/components/forms/prescription-layout-dialog";
+import { MedicineRow, type MedicineRowValue } from "@/components/forms/medicine-row";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
 
-import { prescriptionsMock } from "@/constants/prescriptions-mock";
-import type { Prescription } from "@/types";
-import type { PrescriptionFormValues } from "@/schemas/prescription.schema";
+import {
+  recentPatientsMock,
+  specialTestOptions,
+  defaultLayoutSettings,
+} from "@/constants/prescriptions-mock";
+import type { PrescriptionLayoutSettings } from "@/types";
+import type { LayoutSettingsFormValues } from "@/schemas/prescription.schema";
+
+const emptyMedicine: MedicineRowValue = { name: "", frequency: "", timing: "", duration: "" };
 
 export default function PrescriptionsPage() {
-  const [prescriptions, setPrescriptions] = useState<Prescription[]>(prescriptionsMock);
-  const [search, setSearch] = useState("");
-  const [formOpen, setFormOpen] = useState(false);
-  const [viewing, setViewing] = useState<Prescription | null>(null);
+  const [layoutOpen, setLayoutOpen] = useState(false);
+  const [layoutSettings, setLayoutSettings] =
+    useState<PrescriptionLayoutSettings>(defaultLayoutSettings);
 
-  const filtered = useMemo(() => {
-    return prescriptions.filter(
-      (rx) =>
-        rx.patientName.toLowerCase().includes(search.toLowerCase()) ||
-        rx.doctorName.toLowerCase().includes(search.toLowerCase()) ||
-        rx.diagnosis.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [prescriptions, search]);
+  // form state
+  const [patientName, setPatientName] = useState("");
+  const [patientAge, setPatientAge] = useState("");
+  const [patientGender, setPatientGender] = useState<"Male" | "Female" | "Other" | "">("");
+  const [recentPatientId, setRecentPatientId] = useState("");
 
-  const handleSave = (values: PrescriptionFormValues) => {
-    const newRx: Prescription = {
-      id: `rx-${Date.now()}`,
-      patientName: values.patientName,
-      doctorName: values.doctorName.replace("Dr. ", ""),
-      diagnosis: values.diagnosis,
-      medicines: values.medicines,
-      notes: values.notes,
-      createdAt: new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
-    };
-    setPrescriptions((prev) => [newRx, ...prev]);
+  const [pulse, setPulse] = useState("");
+  const [bp, setBp] = useState("");
+  const [spo2, setSpo2] = useState("");
+  const [temp, setTemp] = useState("");
+  const [weight, setWeight] = useState("");
+
+  const [diagnosis, setDiagnosis] = useState("");
+  const [selectedTests, setSelectedTests] = useState<string[]>([]);
+  const [furtherPlan, setFurtherPlan] = useState("");
+  const [medicines, setMedicines] = useState<MedicineRowValue[]>([{ ...emptyMedicine }]);
+  const [notes, setNotes] = useState(
+    "Avoid salt in diet, soft drinks, bakery items (cakes, pastries, biscuits, samosas, pakoras, naan, pickles, nimko, ketchup) and alcohol."
+  );
+
+  const previewValues = useMemo(
+    () => ({
+      patientName,
+      patientAge,
+      patientGender: patientGender || undefined,
+      pulse,
+      bp,
+      spo2,
+      temp,
+      weight,
+      diagnosis,
+      specialTests: selectedTests,
+      furtherPlan,
+      medicines,
+      notes,
+    }),
+    [patientName, patientAge, patientGender, pulse, bp, spo2, temp, weight, diagnosis, selectedTests, furtherPlan, medicines, notes]
+  );
+
+  const handleRecentPatientSelect = (id: string) => {
+    setRecentPatientId(id);
+    const patient = recentPatientsMock.find((p) => p.id === id);
+    if (patient) {
+      setPatientName(patient.name);
+      setPatientAge(patient.age);
+      setPatientGender(patient.gender);
+    }
   };
 
-  const columns: ColumnDef<Prescription>[] = [
-    {
-      header: "Patient",
-      accessorKey: "patientName",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <FileText className="size-4" />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate font-medium text-foreground">{row.original.patientName}</p>
-            <p className="truncate text-xs text-muted-foreground">{row.original.diagnosis}</p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: "Doctor",
-      accessorKey: "doctorName",
-      cell: ({ row }) => <span className="text-sm text-foreground">Dr. {row.original.doctorName}</span>,
-    },
-    {
-      header: "Medicines",
-      accessorKey: "medicines",
-      cell: ({ row }) => (
-        <Badge variant="secondary">{row.original.medicines.length} medicine(s)</Badge>
-      ),
-    },
-    { header: "Date", accessorKey: "createdAt" },
-    {
-      id: "actions",
-      header: "",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              setViewing(row.original);
-            }}
-          >
-            <Eye className="size-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              setViewing(row.original);
-              setTimeout(() => window.print(), 200);
-            }}
-          >
-            <Printer className="size-4" />
-          </Button>
-        </div>
-      ),
-    },
-  ];
+  const toggleTest = (test: string) => {
+    setSelectedTests((prev) =>
+      prev.includes(test) ? prev.filter((t) => t !== test) : [...prev, test]
+    );
+  };
+
+  const updateMedicine = (index: number, value: MedicineRowValue) => {
+    setMedicines((prev) => prev.map((m, i) => (i === index ? value : m)));
+  };
+
+  const addMedicine = () => setMedicines((prev) => [...prev, { ...emptyMedicine }]);
+
+  const removeMedicine = (index: number) =>
+    setMedicines((prev) => prev.filter((_, i) => i !== index));
+
+  const handlePrint = () => {
+    if (!patientName) {
+      toast.error("Enter patient details before printing");
+      return;
+    }
+    toast.success("Preparing prescription for print/PDF export");
+  };
+
+  const handleWhatsapp = () => {
+    if (!patientName) {
+      toast.error("Enter patient details first");
+      return;
+    }
+    toast.success(`Sharing prescription with ${patientName} via WhatsApp`);
+  };
+
+  const handleSaveLayout = (values: LayoutSettingsFormValues) => {
+    setLayoutSettings((prev) => ({ ...prev, ...values }));
+  };
 
   return (
     <div className="space-y-6 pb-10">
       <PageHeader
-        title="Prescriptions"
-        description="Create and manage patient prescriptions."
+        title="Prescription"
+        description="Generate bilingual orders."
         action={
-          <Button size="sm" onClick={() => setFormOpen(true)}>
-            <Plus className="size-4" />
-            Create prescription
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm">
+              <ClipboardList className="size-3.5" />
+              Plans
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setLayoutOpen(true)}>
+              <LayoutGrid className="size-3.5" />
+              Layout
+            </Button>
+            <Button variant="outline" size="sm">
+              <History className="size-3.5" />
+              History
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-success/30 text-success hover:bg-success/10"
+              onClick={handleWhatsapp}
+            >
+              <MessageCircle className="size-3.5" />
+              WhatsApp
+            </Button>
+            <Button variant="outline" size="sm">
+              <Pill className="size-3.5" />
+              Pharmacy
+            </Button>
+            <Button size="sm" onClick={handlePrint}>
+              <Printer className="size-3.5" />
+              Print / PDF
+            </Button>
+          </div>
         }
       />
 
-      <Card className="p-4">
-        <SearchBar
-          value={search}
-          onChange={setSearch}
-          placeholder="Search by patient, doctor, or diagnosis..."
-        />
-      </Card>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Left: form */}
+        <Card>
+          <CardContent className="space-y-6">
+            {/* Patient details */}
+            <div className="space-y-3">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <User className="size-4 text-primary" />
+                Patient Details
+              </h3>
 
-      <DataTable
-        columns={columns}
-        data={filtered}
-        onRowClick={(rx) => setViewing(rx)}
-        emptyTitle="No prescriptions found"
-        emptyDescription="Try adjusting your search, or create a new prescription."
-      />
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Search in Directory (Global Search)
+                </label>
+                <Input placeholder="Search patient name..." />
+              </div>
 
-      <PrescriptionFormDialog open={formOpen} onOpenChange={setFormOpen} onSaved={handleSave} />
-      <PrescriptionViewDialog
-        open={!!viewing}
-        onOpenChange={(open) => !open && setViewing(null)}
-        prescription={viewing}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Quick Select (Recent Patients)
+                </label>
+                <Select value={recentPatientId} onValueChange={handleRecentPatientSelect}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="-- Choose Recent --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {recentPatientsMock.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name} &middot; {p.age}y &middot; {p.gender}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Patient Name</label>
+                  <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Age (Years)</label>
+                  <Input value={patientAge} onChange={(e) => setPatientAge(e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            {/* Vitals */}
+            <div className="space-y-3 border-t border-border pt-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Vitals Overview
+              </h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Pulse</label>
+                  <Input placeholder="70/min" value={pulse} onChange={(e) => setPulse(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">BP</label>
+                  <Input placeholder="120/80" value={bp} onChange={(e) => setBp(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">SpO2</label>
+                  <Input placeholder="98%" value={spo2} onChange={(e) => setSpo2(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Temp (°F/°C)</label>
+                  <Input placeholder="98.6 F" value={temp} onChange={(e) => setTemp(e.target.value)} />
+                </div>
+                <div className="col-span-2 space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Weight</label>
+                  <div className="flex gap-2">
+                    <Input placeholder="65" value={weight} onChange={(e) => setWeight(e.target.value)} />
+                    <Select defaultValue="kg">
+                      <SelectTrigger className="w-24 shrink-0">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="kg">kg</SelectItem>
+                        <SelectItem value="lb">lb</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Diagnosis */}
+            <div className="space-y-1.5 border-t border-border pt-4">
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Diagnosis
+              </label>
+              <Textarea
+                rows={2}
+                value={diagnosis}
+                onChange={(e) => setDiagnosis(e.target.value)}
+                placeholder="Enter diagnosis..."
+              />
+            </div>
+
+            {/* Special tests */}
+            <div className="space-y-2 border-t border-border pt-4">
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Special Tests Advised
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {specialTestOptions.map((test) => {
+                  const isSelected = selectedTests.includes(test);
+                  return (
+                    <button key={test} type="button" onClick={() => toggleTest(test)}>
+                      <Badge
+                        variant={isSelected ? "default" : "outline"}
+                        className="cursor-pointer select-none"
+                      >
+                        + {test}
+                      </Badge>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Further plan */}
+            <div className="space-y-1.5 border-t border-border pt-4">
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Further Plan / Comment
+              </label>
+              <Textarea
+                rows={2}
+                value={furtherPlan}
+                onChange={(e) => setFurtherPlan(e.target.value)}
+                placeholder="Follow-up instructions..."
+              />
+            </div>
+
+            {/* Medicines */}
+            <div className="space-y-3 border-t border-border pt-4">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Medicines Directory
+                </label>
+                <Button type="button" variant="outline" size="sm" onClick={addMedicine}>
+                  + Add Med
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {medicines.map((med, i) => (
+                  <MedicineRow
+                    key={i}
+                    index={i}
+                    value={med}
+                    onChange={(v) => updateMedicine(i, v)}
+                    onRemove={() => removeMedicine(i)}
+                    canRemove={medicines.length > 1}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* General instructions */}
+            <div className="space-y-1.5 border-t border-border pt-4">
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                General Instructions (English)
+              </label>
+              <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Right: live preview */}
+        <div className="lg:sticky lg:top-20 lg:self-start">
+          <PrescriptionPreview values={previewValues} layout={layoutSettings} />
+        </div>
+      </div>
+
+      <PrescriptionLayoutDialog
+        open={layoutOpen}
+        onOpenChange={setLayoutOpen}
+        settings={layoutSettings}
+        onSaved={handleSaveLayout}
       />
     </div>
   );

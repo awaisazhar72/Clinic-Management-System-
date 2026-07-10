@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { CalendarClock, DollarSign, Users, Activity, Plus } from "lucide-react";
 
 import { PageHeader } from "@/components/common/page-header";
@@ -7,6 +10,7 @@ import { SimpleBarChart } from "@/components/charts/simple-bar-chart";
 import { DonutChart } from "@/components/charts/donut-chart";
 import { LatestAppointmentsList } from "@/components/dashboard/latest-appointments-list";
 import { DoctorScheduleWidget } from "@/components/dashboard/doctor-schedule-widget";
+import { ScheduleAppointmentDialog } from "@/components/forms/schedule-appointment-dialog";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,18 +34,22 @@ function formatCurrency(value: number) {
 }
 
 export default function DashboardPage() {
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+
   return (
     <div className="space-y-6 pb-10">
       <PageHeader
         title="Dashboard"
         description="Welcome back — here's what's happening at your clinic today."
         action={
-          <Button size="sm">
+          <Button size="sm" onClick={() => setScheduleOpen(true)}>
             <Plus className="size-4" />
             New appointment
           </Button>
         }
       />
+
+      <ScheduleAppointmentDialog open={scheduleOpen} onOpenChange={setScheduleOpen} />
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

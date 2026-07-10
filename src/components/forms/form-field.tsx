@@ -2,7 +2,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 interface FormFieldProps {
-  label: string;
+  label: React.ReactNode;
   htmlFor?: string;
   error?: string;
   required?: boolean;

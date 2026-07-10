@@ -152,14 +152,42 @@ export interface PrescriptionMedicine {
   duration: string;
 }
 
+export interface PrescriptionVitals {
+  pulse?: string;
+  bp?: string;
+  spo2?: string;
+  temp?: string;
+  weight?: string;
+  weightUnit?: string;
+}
+
 export interface Prescription {
   id: string;
   patientName: string;
+  patientAge?: string;
+  patientGender?: "Male" | "Female" | "Other";
   doctorName: string;
   createdAt: string;
   diagnosis: string;
+  vitals?: PrescriptionVitals;
+  specialTests?: string[];
   medicines: PrescriptionMedicine[];
+  furtherPlan?: string;
   notes?: string;
+}
+
+export interface PrescriptionLayoutSettings {
+  logoUrl?: string;
+  clinicName: string;
+  clinicTagline: string;
+  clinicNameUrdu: string;
+  clinicTaglineUrdu: string;
+  doctorName: string;
+  doctorPhone: string;
+  degrees: string;
+  degreesUrdu: string;
+  specialties: string;
+  specialtiesUrdu: string;
 }
 
 export interface PaginatedResponse<T> {
