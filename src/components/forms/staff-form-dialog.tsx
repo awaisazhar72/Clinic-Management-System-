@@ -132,7 +132,7 @@ export function StaffFormDialog({ open, onOpenChange, staff, onSaved }: StaffFor
           </div>
 
           <FormField label="Email" htmlFor="email" required error={errors.email?.message}>
-            <Input id="email" type="email" placeholder="staff@sehatos.com" {...register("email")} />
+            <Input id="email" type="email" placeholder="staff@clinic.com" {...register("email")} />
           </FormField>
 
           <DialogFooter>

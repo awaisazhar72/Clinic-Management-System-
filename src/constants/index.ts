@@ -1,4 +1,5 @@
-export const APP_NAME = "SehatOS";
+export const APP_NAME = "Clinic Management System";
+export const APP_SHORT_NAME = "CMS";
 
 export const ROUTES = {
   home: "/",

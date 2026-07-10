@@ -42,10 +42,10 @@ export function AuthLayout({
         <div className="mx-auto w-full max-w-sm">
           <Link href="/" className="flex items-center gap-2 mb-10">
             <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
-              S
+              C
             </div>
             <span className="text-lg font-semibold tracking-tight text-foreground">
-              {APP_NAME}
+              Clinic Management
             </span>
           </Link>
 
@@ -77,7 +77,7 @@ export function AuthLayout({
               Every patient. Every appointment. One steady rhythm.
             </h2>
             <p className="mt-4 text-white/80 text-sm leading-relaxed">
-              SehatOS brings scheduling, records, prescriptions, and billing
+              Our clinic management system brings scheduling, records, prescriptions, and billing
               into a single, calm workspace built for busy clinics.
             </p>
           </div>

@@ -67,7 +67,7 @@ export default function ProfilePage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                {user?.clinicName ?? "Sehat Clinic"}
+                {user?.clinicName ?? "City Care Clinic"}
               </p>
             </div>
           </div>
@@ -82,7 +82,7 @@ export default function ProfilePage() {
             <div className="min-w-0">
               <p className="text-xs text-muted-foreground">Email</p>
               <p className="truncate text-sm font-medium text-foreground">
-                {user?.email ?? "ayesha.khan@sehatos.com"}
+                {user?.email ?? "ayesha.khan@clinic.com"}
               </p>
             </div>
           </CardContent>
@@ -104,7 +104,7 @@ export default function ProfilePage() {
             <div className="min-w-0">
               <p className="text-xs text-muted-foreground">Clinic</p>
               <p className="truncate text-sm font-medium text-foreground">
-                {user?.clinicName ?? "Sehat Clinic"}
+                {user?.clinicName ?? "City Care Clinic"}
               </p>
             </div>
           </CardContent>

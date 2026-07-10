@@ -9,7 +9,7 @@ export function PosCounterMock() {
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-xl shadow-black/5">
       <div className="border-b border-border bg-muted/30 px-4 py-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-teal-700">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-primary">
           Smart POS Counter
         </p>
         <p className="text-xs text-muted-foreground">Walk-in sale · Counter #1</p>
@@ -39,11 +39,11 @@ export function PosCounterMock() {
         <div className="flex flex-col justify-between p-4">
           <div>
             <p className="text-[10px] text-muted-foreground">Amount due</p>
-            <p className="text-2xl font-bold text-teal-700">Rs {subtotal}</p>
+            <p className="text-2xl font-bold text-primary">Rs {subtotal}</p>
           </div>
           <button
             type="button"
-            className="w-full rounded-lg bg-teal-700 py-2 text-xs font-semibold text-white"
+            className="w-full rounded-lg bg-primary py-2 text-xs font-semibold text-primary-foreground"
           >
             Proceed to pay
           </button>

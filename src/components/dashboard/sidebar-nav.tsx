@@ -7,7 +7,7 @@ import { LogOut } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { ICON_MAP } from "@/lib/icon-map";
-import { APP_NAME, SIDEBAR_LINKS } from "@/constants";
+import { SIDEBAR_LINKS } from "@/constants";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
 
@@ -25,10 +25,10 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 px-5 py-5">
         <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
-          S
+          C
         </div>
         <span className="text-base font-semibold tracking-tight text-sidebar-foreground">
-          {APP_NAME}
+          Clinic Management
         </span>
       </div>
 

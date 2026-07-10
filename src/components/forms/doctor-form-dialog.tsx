@@ -138,7 +138,7 @@ export function DoctorFormDialog({
               <Input id="phone" placeholder="+92 300 1234567" {...register("phone")} />
             </FormField>
             <FormField label="Email" htmlFor="email" required error={errors.email?.message}>
-              <Input id="email" type="email" placeholder="doctor@sehatos.com" {...register("email")} />
+              <Input id="email" type="email" placeholder="doctor@clinic.com" {...register("email")} />
             </FormField>
           </div>
 

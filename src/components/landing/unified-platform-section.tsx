@@ -47,7 +47,7 @@ function SectionBadge({
   label: string;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-wide text-teal-700">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-accent px-3 py-1 text-[11px] font-semibold tracking-wide text-primary">
       <Icon className="size-3.5" />
       {label}
     </span>
@@ -62,13 +62,13 @@ export function UnifiedPlatformSection() {
 
         <h2 className="mt-5 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Your clinic & pharmacy —{" "}
-          <span className="text-teal-600">one unified platform</span>
+          <span className="text-primary">one unified platform</span>
         </h2>
 
         <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-          Stop switching between disconnected tools. SehatDoc links your clinic
-          workflow to pharmacy operations so prescriptions, billing, and inventory
-          stay in sync.
+          Stop switching between disconnected tools. Our clinic management system
+          links clinic workflow to pharmacy operations so prescriptions, billing,
+          and inventory stay in sync.
         </p>
       </div>
 
@@ -76,7 +76,7 @@ export function UnifiedPlatformSection() {
         <ul className="space-y-6">
           {pharmacyFeatures.map((feature) => (
             <li key={feature.title} className="flex gap-4">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-teal-700 text-white">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
                 <feature.icon className="size-5" />
               </div>
               <div>
@@ -100,7 +100,7 @@ export function UnifiedPlatformSection() {
 
           <h2 className="mt-5 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Sell medicines like a pro —{" "}
-            <span className="text-teal-600">zero paperwork</span>
+            <span className="text-primary">zero paperwork</span>
           </h2>
 
           <p className="mt-4 text-sm leading-6 text-muted-foreground sm:text-base">
@@ -112,7 +112,7 @@ export function UnifiedPlatformSection() {
           <ul className="mt-6 space-y-3">
             {posHighlights.map((item) => (
               <li key={item} className="flex items-start gap-3 text-sm text-foreground">
-                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700">
+                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
                   <Check className="size-3" />
                 </span>
                 {item}

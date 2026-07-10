@@ -42,7 +42,7 @@ export const useRoleStore = create<RoleStoreState>()(
         })),
     }),
     {
-      name: "sehatos-role-permissions",
+      name: "cms-role-permissions",
       version: 2,
       migrate: (persistedState: unknown) => {
         const state = persistedState as { roles?: Array<Record<string, unknown>> };

@@ -221,7 +221,7 @@ export function ScheduleAppointmentDialog({
               </p>
             </div>
 
-            <p className="text-center text-xs text-muted-foreground">Sehat Clinic</p>
+            <p className="text-center text-xs text-muted-foreground">City Care Clinic</p>
 
             <div className="flex gap-3 pt-1">
               <Button variant="outline" className="flex-1" onClick={handleDone}>

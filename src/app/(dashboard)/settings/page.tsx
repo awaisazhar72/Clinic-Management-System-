@@ -160,7 +160,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue={user?.email ?? "ayesha.khan@sehatos.com"} />
+                  <Input id="email" type="email" defaultValue={user?.email ?? "ayesha.khan@clinic.com"} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone</Label>
@@ -205,7 +205,7 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="clinicName">Clinic name</Label>
-                  <Input id="clinicName" defaultValue="Sehat Clinic" />
+                  <Input id="clinicName" defaultValue="City Care Clinic" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="clinicPhone">Clinic phone</Label>
@@ -354,7 +354,7 @@ export default function SettingsPage() {
                 { key: "smsReminders" as const, label: "SMS appointment reminders", description: "Get texted before upcoming appointments" },
                 { key: "appointmentAlerts" as const, label: "New appointment alerts", description: "Notify when a new appointment is booked" },
                 { key: "billingAlerts" as const, label: "Billing alerts", description: "Notify on overdue or pending invoices" },
-                { key: "marketingEmails" as const, label: "Product updates", description: "Occasional emails about new SehatOS features" },
+                { key: "marketingEmails" as const, label: "Product updates", description: "Occasional emails about new clinic management features" },
               ].map((item) => (
                 <div key={item.key} className="flex items-center justify-between gap-4 py-3">
                   <div>
@@ -384,7 +384,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Appearance</CardTitle>
-              <CardDescription>Customize how SehatOS looks for you.</CardDescription>
+              <CardDescription>Customize how the clinic management system looks for you.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">

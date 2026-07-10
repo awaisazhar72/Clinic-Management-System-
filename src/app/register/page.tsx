@@ -77,7 +77,7 @@ export default function RegisterPage() {
             <Label htmlFor="clinicName">Clinic name</Label>
             <Input
               id="clinicName"
-              placeholder="Sehat Clinic"
+              placeholder="City Care Clinic"
               aria-invalid={!!errors.clinicName}
               {...register("clinicName")}
             />

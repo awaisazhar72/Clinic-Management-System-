@@ -18,17 +18,17 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       setAuth: (user, token) => {
         if (typeof window !== "undefined") {
-          localStorage.setItem("sehatos_token", token);
+          localStorage.setItem("cms_token", token);
         }
         set({ user, token, isAuthenticated: true });
       },
       clearAuth: () => {
         if (typeof window !== "undefined") {
-          localStorage.removeItem("sehatos_token");
+          localStorage.removeItem("cms_token");
         }
         set({ user: null, token: null, isAuthenticated: false });
       },
     }),
-    { name: "sehatos-auth" }
+    { name: "cms-auth" }
   )
 );

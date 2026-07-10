@@ -12,6 +12,20 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { AutomaticBillingSection } from "@/components/landing/automatic-billing-section";
+import { ContactSupportCtaSection } from "@/components/landing/contact-support-cta-section";
+import { DataSecuritySection } from "@/components/landing/data-security-section";
+import { FuturisticInterfaceSection } from "@/components/landing/futuristic-interface-section";
+import { LabDiagnosticsSection } from "@/components/landing/lab-diagnostics-section";
+import { LandingFooter } from "@/components/landing/landing-footer";
+import { PracticeDoneRightSection } from "@/components/landing/practice-done-right-section";
+import { PublicBookingQrSection } from "@/components/landing/public-booking-qr-section";
+import { SimplePricingSection } from "@/components/landing/simple-pricing-section";
+import { SmartPrescriptionsSection } from "@/components/landing/smart-prescriptions-section";
+import { SmartRemindersSection } from "@/components/landing/smart-reminders-section";
+import { SupportSection } from "@/components/landing/support-section";
+import { TeamCollaborationSection } from "@/components/landing/team-collaboration-section";
+import { TestimonialsSection } from "@/components/landing/testimonials-section";
 import { UnifiedPlatformSection } from "@/components/landing/unified-platform-section";
 
 export default function Home() {
@@ -24,7 +38,7 @@ export default function Home() {
               <Shield className="size-4" />
             </div>
             <div>
-              <p className="text-sm font-semibold tracking-wide text-foreground">SEHATDOC</p>
+              <p className="text-sm font-semibold tracking-wide text-foreground">Clinic Management</p>
               <p className="text-[10px] text-muted-foreground">Pakistan&apos;s #1 Clinic Platform</p>
             </div>
           </Link>
@@ -116,13 +130,13 @@ export default function Home() {
         {/* Walkthrough */}
         <section className="mx-auto mt-24 w-full max-w-5xl sm:mt-32">
           <div className="flex flex-col items-center text-center">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-wide text-teal-700">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-accent px-3 py-1 text-[11px] font-semibold tracking-wide text-primary">
               <Video className="size-3.5" />
               VIDEO WALKTHROUGH
             </span>
 
             <h2 className="mt-5 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              See <span className="text-teal-600">SehatDoc</span> in Action
+              See <span className="text-primary">Clinic Management</span> in Action
             </h2>
 
             <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
@@ -134,7 +148,7 @@ export default function Home() {
           <div className="mt-10 overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
             <Image
               src="/landing-walkthrough.png"
-              alt="SehatDoc clinic dashboard preview"
+              alt="Clinic management dashboard preview"
               width={1200}
               height={675}
               className="aspect-video w-full object-cover"
@@ -164,7 +178,7 @@ export default function Home() {
                 key={item.title}
                 className="rounded-xl border border-border bg-card p-6 text-center shadow-sm"
               >
-                <div className="mx-auto flex size-11 items-center justify-center rounded-lg bg-teal-50 text-teal-600">
+                <div className="mx-auto flex size-11 items-center justify-center rounded-lg bg-accent text-primary">
                   <item.icon className="size-5" />
                 </div>
                 <h3 className="mt-4 text-sm font-semibold text-foreground">{item.title}</h3>
@@ -175,7 +189,35 @@ export default function Home() {
         </section>
 
         <UnifiedPlatformSection />
+
+        <LabDiagnosticsSection />
+
+        <FuturisticInterfaceSection />
+
+        <SmartPrescriptionsSection />
+
+        <TeamCollaborationSection />
+
+        <DataSecuritySection />
+
+        <AutomaticBillingSection />
+
+        <SmartRemindersSection />
+
+        <PublicBookingQrSection />
+
+        <SimplePricingSection />
+
+        <TestimonialsSection />
+
+        <SupportSection />
+
+        <ContactSupportCtaSection />
+
+        <PracticeDoneRightSection />
       </main>
+
+      <LandingFooter />
     </div>
   );
 }

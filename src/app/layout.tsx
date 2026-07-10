@@ -4,7 +4,7 @@ import { AppProviders } from "@/context/app-providers";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "SehatOS | Clinic Management",
+  title: "Clinic Management System",
   description: "Modern clinic management platform for doctors, patients, and staff.",
 };
 

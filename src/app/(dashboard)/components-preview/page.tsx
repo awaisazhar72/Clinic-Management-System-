@@ -133,7 +133,7 @@ export default function ComponentsPreviewPage() {
               id: "1",
               fullName: "Dr. Ayesha Khan",
               specialty: "Cardiologist",
-              email: "ayesha@sehatos.com",
+              email: "ayesha@clinic.com",
               phone: "+92 300 1234567",
               rating: 4.8,
               experienceYears: 9,

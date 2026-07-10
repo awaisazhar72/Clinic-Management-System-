@@ -24,6 +24,6 @@ export const useThemeStore = create<ThemeState>()(
         get().setTheme(next);
       },
     }),
-    { name: "sehatos-theme" }
+    { name: "cms-theme" }
   )
 );

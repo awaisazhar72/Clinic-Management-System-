@@ -58,7 +58,7 @@ export default function LoginPage() {
   return (
     <GuestLayout>
     <AuthLayout
-      title="Sign in to SehatOS"
+      title="Sign in to Clinic Management"
       subtitle="Enter your credentials to access your clinic dashboard."
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
