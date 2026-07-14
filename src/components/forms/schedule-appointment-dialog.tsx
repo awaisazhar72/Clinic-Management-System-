@@ -40,6 +40,7 @@ import {
   type QuickAppointmentFormValues,
   type QuickAppointmentFormOutput,
 } from "@/schemas/quick-appointment.schema";
+import type { Appointment } from "@/types";
 
 interface BookedResult {
   ticketId: string;
@@ -52,7 +53,7 @@ interface BookedResult {
   amount: number;
 }
 
-const defaultValues: QuickAppointmentFormValues = {
+const baseDefaults: QuickAppointmentFormValues = {
   type: "walk-in",
   doctorId: "",
   phone: "",
@@ -77,14 +78,41 @@ function tomorrowISO() {
   return d.toISOString().slice(0, 10);
 }
 
+function buildDefaults(appointment?: Appointment | null, defaultDate?: Date): QuickAppointmentFormValues {
+  if (appointment) {
+    return {
+      ...baseDefaults,
+      type: appointment.visitType === "walk-in" ? "walk-in" : "consultation",
+      doctorId: appointment.doctorId,
+      fullName: appointment.patientName,
+      date: appointment.date,
+      time: appointment.time,
+    };
+  }
+  return {
+    ...baseDefaults,
+    date: defaultDate ? defaultDate.toISOString().slice(0, 10) : baseDefaults.date,
+  };
+}
+
 export function ScheduleAppointmentDialog({
   open,
   onOpenChange,
+  appointment = null,
+  defaultDate,
+  onSaved,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Pass an existing appointment to prefill the form for editing/rescheduling. */
+  appointment?: Appointment | null;
+  /** Pre-fill the date field (e.g. when booking from a specific day). */
+  defaultDate?: Date;
+  /** Called with the booked/updated values so the parent page can sync its own list. */
+  onSaved?: (values: QuickAppointmentFormOutput) => void;
 }) {
   const [result, setResult] = useState<BookedResult | null>(null);
+  const isEdit = !!appointment;
 
   const {
     register,
@@ -95,15 +123,16 @@ export function ScheduleAppointmentDialog({
     formState: { errors, isSubmitting },
   } = useForm<QuickAppointmentFormValues, unknown, QuickAppointmentFormOutput>({
     resolver: zodResolver(quickAppointmentSchema),
-    defaultValues,
+    defaultValues: buildDefaults(appointment, defaultDate),
   });
 
   useEffect(() => {
     if (open) {
-      reset(defaultValues);
+      reset(buildDefaults(appointment, defaultDate));
       setResult(null);
     }
-  }, [open, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, appointment, defaultDate, reset]);
 
   const type = watch("type");
   const isConsultation = type === "consultation";
@@ -112,6 +141,17 @@ export function ScheduleAppointmentDialog({
     await new Promise((r) => setTimeout(r, 700));
 
     const doctor = doctorsMock.find((d) => d.id === values.doctorId);
+
+    onSaved?.(values);
+
+    if (isEdit) {
+      toast.success(`${values.fullName}'s appointment updated`, {
+        description: doctor ? `With ${doctor.fullName}` : undefined,
+      });
+      onOpenChange(false);
+      return;
+    }
+
     const ticketSuffix = Math.random().toString(16).slice(2, 8).toUpperCase();
     const refSuffix = Math.random().toString(16).slice(2, 9).toUpperCase();
 
@@ -243,8 +283,10 @@ export function ScheduleAppointmentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Schedule Appt</DialogTitle>
-          <DialogDescription>Add a new patient visit.</DialogDescription>
+          <DialogTitle>{isEdit ? "Reschedule Appt" : "Schedule Appt"}</DialogTitle>
+          <DialogDescription>
+            {isEdit ? "Update this patient visit." : "Add a new patient visit."}
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -416,7 +458,7 @@ export function ScheduleAppointmentDialog({
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="size-4 animate-spin" />}
               <CheckCircle2 className="size-4" />
-              Confirm Appointment
+              {isEdit ? "Save Changes" : "Confirm Appointment"}
             </Button>
           </div>
         </form>

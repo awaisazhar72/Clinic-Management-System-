@@ -38,6 +38,7 @@ import {
 import type { PrescriptionLayoutSettings } from "@/types";
 import type { LayoutSettingsFormValues } from "@/schemas/prescription.schema";
 
+
 const emptyMedicine: MedicineRowValue = { name: "", frequency: "", timing: "", duration: "" };
 
 export default function PrescriptionsPage() {
@@ -169,7 +170,7 @@ export default function PrescriptionsPage() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] items-start">
         {/* Left: form */}
         <Card>
           <CardContent className="space-y-6">
@@ -339,9 +340,9 @@ export default function PrescriptionsPage() {
           </CardContent>
         </Card>
 
-        {/* Right: live preview */}
-        <div className="lg:sticky lg:top-20 lg:self-start">
-          <PrescriptionPreview values={previewValues} layout={layoutSettings} />
+        
+        <div className="lg:sticky lg:top-20 lg:self-start w-full">
+        <PrescriptionPreview values={previewValues} layout={layoutSettings} />
         </div>
       </div>
 

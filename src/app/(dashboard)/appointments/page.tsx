@@ -1,91 +1,81 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { type ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
 import {
-  CalendarDays,
-  List,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  Trash2,
+  AlertCircle,
   CalendarClock,
+  CalendarDays,
+  Download,
+  EyeOff,
+  List,
+  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { PageHeader } from "@/components/common/page-header";
-import { SearchBar } from "@/components/common/search-bar";
-import { Filter } from "@/components/common/filter";
-import { Pagination } from "@/components/common/pagination";
-import { DataTable } from "@/components/tables/data-table";
+import { DateStrip } from "@/components/dashboard/date-strip";
+import { ScheduleListRow } from "@/components/dashboard/schedule-list-row";
 import { AppointmentCalendarView } from "@/components/dashboard/appointment-calendar-view";
-import { AppointmentFormDialog } from "@/components/forms/appointment-form-dialog";
+import { ScheduleAppointmentDialog } from "@/components/forms/schedule-appointment-dialog";
+import { PatientProfileDialog } from "@/components/dashboard/patient-profile-dialog";
 import { ConfirmDialog } from "@/components/modals/confirm-dialog";
+import { EmptyState } from "@/components/common/empty-state";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { appointmentsMock } from "@/constants/appointments-mock";
 import { doctorsMock } from "@/constants/doctors-mock";
-import type { Appointment, AppointmentStatus } from "@/types";
-import type { AppointmentFormValues } from "@/schemas/appointment.schema";
-
-const PAGE_SIZE = 6;
-
-const statusVariant: Record<AppointmentStatus, "success" | "warning" | "destructive" | "secondary"> = {
-  scheduled: "warning",
-  completed: "success",
-  cancelled: "destructive",
-  "no-show": "secondary",
-};
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
+import type { Appointment } from "@/types";
+import type { QuickAppointmentFormOutput } from "@/schemas/quick-appointment.schema";
+import { cn } from "@/lib/utils";
 
 export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>(appointmentsMock);
-  const [view, setView] = useState<"calendar" | "table">("calendar");
+  const [selectedDate, setSelectedDate] = useState(() => new Date("2026-07-11T00:00:00"));
+  const [view, setView] = useState<"list" | "calendar">("list");
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [doctorFilter, setDoctorFilter] = useState("all");
-  const [page, setPage] = useState(1);
+  const [hideCompleted, setHideCompleted] = useState(false);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [defaultDate, setDefaultDate] = useState<Date | undefined>(undefined);
   const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
 
-  const filtered = useMemo(() => {
-    return appointments.filter((apt) => {
-      const matchesSearch =
-        apt.patientName.toLowerCase().includes(search.toLowerCase()) ||
-        apt.doctorName.toLowerCase().includes(search.toLowerCase());
-      const matchesStatus = statusFilter === "all" || apt.status === statusFilter;
-      const matchesDoctor = doctorFilter === "all" || apt.doctorId === doctorFilter;
-      return matchesSearch && matchesStatus && matchesDoctor;
-    });
-  }, [appointments, search, statusFilter, doctorFilter]);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profilePatient, setProfilePatient] = useState<Appointment | null>(null);
 
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const pendingCount = useMemo(
+    () => appointments.filter((a) => a.status === "scheduled").length,
+    [appointments]
+  );
+
+  const dayAppointments = useMemo(() => {
+    return appointments
+      .filter((apt) => isSameDay(new Date(apt.date), selectedDate))
+      .filter((apt) => {
+        const matchesSearch =
+          apt.patientName.toLowerCase().includes(search.toLowerCase()) ||
+          apt.doctorName.toLowerCase().includes(search.toLowerCase());
+        const matchesDoctor = doctorFilter === "all" || apt.doctorId === doctorFilter;
+        const matchesHideCompleted = !hideCompleted || apt.status !== "completed";
+        return matchesSearch && matchesDoctor && matchesHideCompleted;
+      })
+      .sort((a, b) => a.time.localeCompare(b.time));
+  }, [appointments, selectedDate, search, doctorFilter, hideCompleted]);
 
   const handleBookNew = (date?: Date) => {
     setEditingAppointment(null);
-    setDefaultDate(date);
+    setDefaultDate(date ?? selectedDate);
     setFormOpen(true);
   };
 
@@ -95,9 +85,13 @@ export default function AppointmentsPage() {
     setFormOpen(true);
   };
 
-  const handleSave = (values: AppointmentFormValues) => {
+  const handleViewProfile = (appointment: Appointment) => {
+    setProfilePatient(appointment);
+    setProfileOpen(true);
+  };
+
+  const handleSave = (values: QuickAppointmentFormOutput) => {
     const doctor = doctorsMock.find((d) => d.id === values.doctorId);
-    const dateStr = format(values.date, "yyyy-MM-dd");
 
     if (editingAppointment) {
       setAppointments((prev) =>
@@ -105,13 +99,12 @@ export default function AppointmentsPage() {
           a.id === editingAppointment.id
             ? {
                 ...a,
-                patientName: values.patientName,
+                patientName: values.fullName,
                 doctorId: values.doctorId,
                 doctorName: doctor?.fullName.replace("Dr. ", "") ?? a.doctorName,
-                date: dateStr,
-                time: values.time,
-                reason: values.reason,
-                status: values.status,
+                date: values.date || a.date,
+                time: values.time || a.time,
+                visitType: values.type,
               }
             : a
         )
@@ -121,13 +114,13 @@ export default function AppointmentsPage() {
         {
           id: `apt-${Date.now()}`,
           patientId: `p-${Date.now()}`,
-          patientName: values.patientName,
+          patientName: values.fullName,
           doctorId: values.doctorId,
           doctorName: doctor?.fullName.replace("Dr. ", "") ?? "",
-          date: dateStr,
-          time: values.time,
-          reason: values.reason,
-          status: values.status,
+          date: values.date || format(new Date(), "yyyy-MM-dd"),
+          time: values.time || "Now",
+          status: "scheduled",
+          visitType: values.type,
         },
         ...prev,
       ]);
@@ -142,177 +135,178 @@ export default function AppointmentsPage() {
     toast.success(`Appointment with ${cancelTarget.patientName} cancelled`);
   };
 
-  const columns: ColumnDef<Appointment>[] = [
-    {
-      header: "Patient",
-      accessorKey: "patientName",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <Avatar className="size-9 shrink-0">
-            <AvatarFallback className="bg-primary/10 text-primary text-xs">
-              {initials(row.original.patientName)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <p className="truncate font-medium text-foreground">{row.original.patientName}</p>
-            <p className="truncate text-xs text-muted-foreground">{row.original.reason}</p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: "Doctor",
-      accessorKey: "doctorName",
-      cell: ({ row }) => <span className="text-sm text-foreground">Dr. {row.original.doctorName}</span>,
-    },
-    {
-      header: "Date & time",
-      accessorKey: "date",
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
-          {format(new Date(row.original.date), "MMM d, yyyy")} &middot; {row.original.time}
-        </span>
-      ),
-    },
-    {
-      header: "Status",
-      accessorKey: "status",
-      cell: ({ row }) => (
-        <Badge variant={statusVariant[row.original.status]} className="capitalize">
-          {row.original.status.replace("-", " ")}
-        </Badge>
-      ),
-    },
-    {
-      id: "actions",
-      header: "",
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
-              <MoreHorizontal className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleEdit(row.original)}>
-              <Pencil className="size-4" />
-              Edit / Reschedule
-            </DropdownMenuItem>
-            {row.original.status === "scheduled" && (
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => setCancelTarget(row.original)}
-              >
-                <Trash2 className="size-4" />
-                Cancel
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-    },
-  ];
+  const handleMarkDone = (appointment: Appointment) => {
+    setAppointments((prev) =>
+      prev.map((a) => (a.id === appointment.id ? { ...a, status: "completed" } : a))
+    );
+    toast.success(`${appointment.patientName}'s visit marked as completed`);
+  };
+
+  const handleExport = () => {
+    toast.success("Exporting appointments...");
+  };
 
   return (
     <div className="space-y-6 pb-10">
-      <PageHeader
-        title="Appointments"
-        description="Book, manage, and track patient appointments."
-        action={
-          <Button size="sm" onClick={() => handleBookNew()}>
-            <Plus className="size-4" />
-            Book appointment
-          </Button>
-        }
-      />
-
-      <Card className="p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <SearchBar
-            value={search}
-            onChange={(v) => {
-              setSearch(v);
-              setPage(1);
-            }}
-            placeholder="Search by patient or doctor..."
-            className="flex-1"
-          />
-          <div className="flex flex-wrap gap-2">
-            <Filter
-              label="Doctor"
-              value={doctorFilter}
-              onChange={(v) => {
-                setDoctorFilter(v);
-                setPage(1);
-              }}
-              options={[
-                { label: "All", value: "all" },
-                ...doctorsMock.map((d) => ({ label: d.fullName, value: d.id })),
-              ]}
-            />
-            <Filter
-              label="Status"
-              value={statusFilter}
-              onChange={(v) => {
-                setStatusFilter(v);
-                setPage(1);
-              }}
-              options={[
-                { label: "All", value: "all" },
-                { label: "Scheduled", value: "scheduled" },
-                { label: "Completed", value: "completed" },
-                { label: "Cancelled", value: "cancelled" },
-                { label: "No-show", value: "no-show" },
-              ]}
-            />
-            <div className="flex rounded-md border border-border p-0.5">
-              <Button
-                variant={view === "calendar" ? "secondary" : "ghost"}
-                size="icon"
-                className="size-8"
-                onClick={() => setView("calendar")}
-              >
-                <CalendarDays className="size-4" />
-              </Button>
-              <Button
-                variant={view === "table" ? "secondary" : "ghost"}
-                size="icon"
-                className="size-8"
-                onClick={() => setView("table")}
-              >
-                <List className="size-4" />
-              </Button>
-            </div>
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <CalendarClock className="size-5" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight text-foreground">
+              Appointments Hub
+            </h1>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Manage patient schedule
+            </p>
           </div>
         </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleExport}>
+            <Download className="size-4" />
+            Export
+          </Button>
+          <Button size="sm" onClick={() => handleBookNew()}>
+            <Plus className="size-4" />
+            Book
+          </Button>
+        </div>
+      </div>
+
+      {/* Filter bar */}
+      <Card>
+        <CardContent className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <Input
+            placeholder="Quick search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="lg:flex-1"
+          />
+
+          <Select value={doctorFilter} onValueChange={setDoctorFilter}>
+            <SelectTrigger className="w-full lg:w-48">
+              <SelectValue placeholder="All Doctors" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Doctors</SelectItem>
+              {doctorsMock.map((d) => (
+                <SelectItem key={d.id} value={d.id}>
+                  {d.fullName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive">
+            <AlertCircle className="size-3.5" />
+            {pendingCount} Pending
+          </span>
+
+          <button
+            type="button"
+            onClick={() => setHideCompleted((v) => !v)}
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
+              hideCompleted
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <EyeOff className="size-3.5" />
+            Hide Comp.
+          </button>
+
+          <div className="flex shrink-0 rounded-md border border-border p-0.5">
+            <Button
+              variant={view === "list" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setView("list")}
+            >
+              <List className="size-3.5" />
+              List
+            </Button>
+            <Button
+              variant={view === "calendar" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setView("calendar")}
+            >
+              <CalendarDays className="size-3.5" />
+              Calendar
+            </Button>
+          </div>
+        </CardContent>
       </Card>
 
-      {view === "calendar" ? (
+      {view === "list" ? (
+        <>
+          {/* Date strip */}
+          <DateStrip selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+
+          {/* Today's schedule */}
+          <Card>
+            <CardContent>
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <CalendarDays className="size-4 text-muted-foreground" />
+                  {isSameDay(selectedDate, new Date("2026-07-11T00:00:00"))
+                    ? "Today's Schedule"
+                    : `Schedule for ${format(selectedDate, "MMM d, yyyy")}`}
+                </h2>
+                <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {dayAppointments.length} record{dayAppointments.length === 1 ? "" : "s"}
+                </span>
+              </div>
+
+              {dayAppointments.length === 0 ? (
+                <EmptyState
+                  title="No appointments for this day"
+                  description="Try a different date or book a new appointment."
+                  action={{ label: "Book appointment", onClick: () => handleBookNew() }}
+                />
+              ) : (
+                <div className="divide-y divide-border">
+                  {dayAppointments.map((apt) => (
+                    <ScheduleListRow
+                      key={apt.id}
+                      appointment={apt}
+                      onViewProfile={() => handleViewProfile(apt)}
+                      onMarkDone={
+                        apt.status === "scheduled" ? () => handleMarkDone(apt) : undefined
+                      }
+                      onReschedule={() => handleEdit(apt)}
+                      onCancel={
+                        apt.status === "scheduled" ? () => setCancelTarget(apt) : undefined
+                      }
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      ) : (
         <AppointmentCalendarView
-          appointments={filtered}
+          appointments={appointments}
           onDayClick={(date) => handleBookNew(date)}
           onAppointmentClick={(apt) => handleEdit(apt)}
         />
-      ) : (
-        <>
-          <DataTable
-            columns={columns}
-            data={paginated}
-            emptyTitle="No appointments found"
-            emptyDescription="Try adjusting your search or filters, or book a new appointment."
-          />
-          {filtered.length > 0 && (
-            <Pagination page={page} pageSize={PAGE_SIZE} total={filtered.length} onPageChange={setPage} />
-          )}
-        </>
       )}
 
-      <AppointmentFormDialog
+      <ScheduleAppointmentDialog
         open={formOpen}
         onOpenChange={setFormOpen}
         appointment={editingAppointment}
         defaultDate={defaultDate}
         onSaved={handleSave}
+      />
+
+      <PatientProfileDialog
+        open={profileOpen}
+        onOpenChange={setProfileOpen}
+        patientName={profilePatient?.patientName ?? null}
+        patientId={profilePatient?.patientId}
       />
 
       <ConfirmDialog

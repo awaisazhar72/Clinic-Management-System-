@@ -12,36 +12,36 @@ export function PrescriptionPreview({ values, layout }: PrescriptionPreviewProps
 
   return (
     <div className="rounded-lg border border-border bg-white shadow-sm">
-      <div className="p-6 text-[11px] leading-tight text-neutral-800">
+      <div className="flex min-h-[calc(100vh-11rem)] flex-col p-8 text-sm leading-relaxed text-neutral-800 lg:min-h-[842px]">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-neutral-300 pb-3">
+        <div className="flex items-start justify-between border-b border-neutral-300 pb-4">
           <div className="text-left">
-            <p className="text-sm font-semibold text-neutral-900">{layout.doctorName}</p>
-            <p className="text-[10px] text-neutral-500">{layout.doctorPhone}</p>
-            <p className="text-[10px] text-neutral-500">{layout.degrees}</p>
+            <p className="text-base font-semibold text-neutral-900">{layout.doctorName}</p>
+            <p className="text-xs text-neutral-500">{layout.doctorPhone}</p>
+            <p className="text-xs text-neutral-500">{layout.degrees}</p>
           </div>
 
           <div className="flex flex-col items-center text-center">
-            <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Stethoscope className="size-4" />
+            <div className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Stethoscope className="size-5" />
             </div>
-            <p className="mt-1 text-sm font-bold tracking-wide text-neutral-900">
+            <p className="mt-1.5 text-base font-bold tracking-wide text-neutral-900">
               {layout.clinicName.toUpperCase()}
             </p>
-            <p className="text-[9px] uppercase tracking-wide text-neutral-500">
+            <p className="text-[11px] uppercase tracking-wide text-neutral-500">
               {layout.clinicTagline}
             </p>
           </div>
 
           <div className="text-right" dir="rtl">
-            <p className="text-sm font-semibold text-neutral-900">{layout.doctorName.replace("Dr. ", "ڈاکٹر ")}</p>
-            <p className="text-[10px] text-neutral-500">{layout.degreesUrdu}</p>
-            <p className="text-[10px] text-neutral-500">{layout.specialtiesUrdu}</p>
+            <p className="text-base font-semibold text-neutral-900">{layout.doctorName.replace("Dr. ", "ڈاکٹر ")}</p>
+            <p className="text-xs text-neutral-500">{layout.degreesUrdu}</p>
+            <p className="text-xs text-neutral-500">{layout.specialtiesUrdu}</p>
           </div>
         </div>
 
         {/* Patient info bar */}
-        <div className="mt-3 grid grid-cols-4 gap-2 border-b border-neutral-300 pb-2 text-[10px]">
+        <div className="mt-4 grid grid-cols-4 gap-2 border-b border-neutral-300 pb-3 text-xs">
           <span>
             <span className="text-neutral-500">Name: </span>
             <span className="font-medium">{values.patientName || "___________"}</span>
@@ -61,8 +61,8 @@ export function PrescriptionPreview({ values, layout }: PrescriptionPreviewProps
         </div>
 
         {/* Vitals + Rx body */}
-        <div className="mt-3 grid grid-cols-[auto_1fr] gap-4">
-          <div className="space-y-1 border-r border-neutral-200 pr-3 text-[10px]">
+        <div className="mt-4 grid flex-1 grid-cols-[auto_1fr] gap-6">
+          <div className="space-y-1.5 border-r border-neutral-200 pr-4 text-xs">
             <p className="font-semibold text-neutral-600">VITALS</p>
             <p>Pulse: {values.pulse || "—"}</p>
             <p>BP: {values.bp || "—"}</p>
@@ -71,16 +71,16 @@ export function PrescriptionPreview({ values, layout }: PrescriptionPreviewProps
             <p>Weight: {values.weight ? `${values.weight} kg` : "—"}</p>
           </div>
 
-          <div className="min-h-40 space-y-2">
+          <div className="min-h-64 space-y-3">
             {values.diagnosis && (
-              <p className="text-[10px]">
+              <p className="text-xs">
                 <span className="font-semibold text-neutral-600">Dx: </span>
                 {values.diagnosis}
               </p>
             )}
 
             {values.medicines && values.medicines.length > 0 ? (
-              <ol className="space-y-1.5 text-[11px]">
+              <ol className="space-y-2 text-sm">
                 {values.medicines
                   .filter((m) => m.name)
                   .map((med, i) => (
@@ -99,14 +99,14 @@ export function PrescriptionPreview({ values, layout }: PrescriptionPreviewProps
             )}
 
             {values.specialTests && values.specialTests.length > 0 && (
-              <p className="text-[10px]">
+              <p className="text-xs">
                 <span className="font-semibold text-neutral-600">Tests advised: </span>
                 {values.specialTests.join(", ")}
               </p>
             )}
 
             {values.furtherPlan && (
-              <p className="text-[10px]">
+              <p className="text-xs">
                 <span className="font-semibold text-neutral-600">Plan: </span>
                 {values.furtherPlan}
               </p>
@@ -115,13 +115,13 @@ export function PrescriptionPreview({ values, layout }: PrescriptionPreviewProps
         </div>
 
         {values.notes && (
-          <p className="mt-3 border-t border-neutral-200 pt-2 text-[10px] text-neutral-600">
+          <p className="mt-4 border-t border-neutral-200 pt-3 text-xs text-neutral-600">
             {values.notes}
           </p>
         )}
 
         {/* Footer */}
-        <div className="mt-6 flex items-center justify-between border-t border-neutral-300 pt-2 text-[9px] text-neutral-500">
+        <div className="mt-6 flex items-center justify-between border-t border-neutral-300 pt-3 text-[11px] text-neutral-500">
           <span>Clinic #2 Doctor Line Islamabad</span>
           <span>MON – SAT &middot; 9AM – 9PM &middot; {layout.doctorPhone}</span>
         </div>

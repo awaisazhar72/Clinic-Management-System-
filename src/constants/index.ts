@@ -10,6 +10,7 @@ export const ROUTES = {
   resetPassword: "/reset-password",
   dashboard: "/dashboard",
   appointments: "/appointments",
+  pastHistory: "/appointments/history",
   patients: "/patients",
   doctors: "/doctors",
   staff: "/staff",
@@ -21,7 +22,15 @@ export const ROUTES = {
 
 export const SIDEBAR_LINKS = [
   { label: "Dashboard", href: ROUTES.dashboard, icon: "LayoutDashboard" },
-  { label: "Appointments", href: ROUTES.appointments, icon: "CalendarClock" },
+  {
+    label: "Appointments",
+    href: ROUTES.appointments,
+    icon: "CalendarClock",
+    children: [
+      { label: "All Appointments", href: ROUTES.appointments },
+      { label: "Past History", href: ROUTES.pastHistory },
+    ],
+  },
   { label: "Patients", href: ROUTES.patients, icon: "Users" },
   { label: "Doctors", href: ROUTES.doctors, icon: "Stethoscope" },
   { label: "Staff", href: ROUTES.staff, icon: "UserCog" },

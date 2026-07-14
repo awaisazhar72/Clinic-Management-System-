@@ -74,6 +74,7 @@ export interface TimelineEvent {
 }
 
 export type AppointmentStatus = "scheduled" | "completed" | "cancelled" | "no-show";
+export type AppointmentVisitType = "walk-in" | "consultation";
 
 export interface Appointment {
   id: string;
@@ -84,6 +85,7 @@ export interface Appointment {
   date: string;
   time: string;
   status: AppointmentStatus;
+  visitType?: AppointmentVisitType;
   reason?: string;
 }
 

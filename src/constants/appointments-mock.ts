@@ -1,6 +1,7 @@
 import type { Appointment } from "@/types";
 
 // Using ISO date strings (yyyy-MM-dd) so they can be parsed reliably for the calendar view.
+// Dates are centered around "today" (Jul 11, 2026) so the date-strip / Today's Schedule show data.
 export const appointmentsMock: Appointment[] = [
   {
     id: "apt-1",
@@ -8,9 +9,10 @@ export const appointmentsMock: Appointment[] = [
     patientName: "Sara Malik",
     doctorId: "d-1",
     doctorName: "Ayesha Khan",
-    date: "2026-07-09",
+    date: "2026-07-11",
     time: "10:30 AM",
     status: "scheduled",
+    visitType: "consultation",
     reason: "Follow-up consultation",
   },
   {
@@ -19,9 +21,10 @@ export const appointmentsMock: Appointment[] = [
     patientName: "Bilal Ahmed",
     doctorId: "d-2",
     doctorName: "Usman Tariq",
-    date: "2026-07-09",
+    date: "2026-07-11",
     time: "11:15 AM",
     status: "scheduled",
+    visitType: "walk-in",
     reason: "Routine checkup",
   },
   {
@@ -30,9 +33,10 @@ export const appointmentsMock: Appointment[] = [
     patientName: "Hina Farooq",
     doctorId: "d-3",
     doctorName: "Fatima Noor",
-    date: "2026-07-09",
+    date: "2026-07-11",
     time: "12:00 PM",
     status: "completed",
+    visitType: "walk-in",
     reason: "Skin allergy",
   },
   {
@@ -41,9 +45,10 @@ export const appointmentsMock: Appointment[] = [
     patientName: "Ali Raza",
     doctorId: "d-3",
     doctorName: "Fatima Noor",
-    date: "2026-07-09",
+    date: "2026-07-11",
     time: "01:30 PM",
     status: "cancelled",
+    visitType: "consultation",
     reason: "Vaccination",
   },
   {
@@ -52,9 +57,10 @@ export const appointmentsMock: Appointment[] = [
     patientName: "Zainab Sheikh",
     doctorId: "d-5",
     doctorName: "Sadia Malik",
-    date: "2026-07-10",
+    date: "2026-07-12",
     time: "09:00 AM",
     status: "scheduled",
+    visitType: "consultation",
     reason: "Migraine review",
   },
   {
@@ -63,9 +69,10 @@ export const appointmentsMock: Appointment[] = [
     patientName: "Usman Ghani",
     doctorId: "d-1",
     doctorName: "Ayesha Khan",
-    date: "2026-07-10",
+    date: "2026-07-12",
     time: "10:00 AM",
     status: "scheduled",
+    visitType: "walk-in",
     reason: "Blood pressure review",
   },
   {
@@ -74,9 +81,10 @@ export const appointmentsMock: Appointment[] = [
     patientName: "Mahnoor Iqbal",
     doctorId: "d-4",
     doctorName: "Hamza Sheikh",
-    date: "2026-07-11",
+    date: "2026-07-13",
     time: "02:00 PM",
     status: "no-show",
+    visitType: "consultation",
     reason: "Acne consultation",
   },
   {
@@ -85,9 +93,10 @@ export const appointmentsMock: Appointment[] = [
     patientName: "Sara Malik",
     doctorId: "d-2",
     doctorName: "Usman Tariq",
-    date: "2026-07-12",
+    date: "2026-07-14",
     time: "11:00 AM",
     status: "scheduled",
+    visitType: "walk-in",
     reason: "Knee pain assessment",
   },
   {
@@ -96,9 +105,10 @@ export const appointmentsMock: Appointment[] = [
     patientName: "Bilal Ahmed",
     doctorId: "d-1",
     doctorName: "Ayesha Khan",
-    date: "2026-07-06",
+    date: "2026-07-08",
     time: "03:00 PM",
     status: "completed",
+    visitType: "consultation",
     reason: "Cardiac screening",
   },
   {
@@ -107,9 +117,10 @@ export const appointmentsMock: Appointment[] = [
     patientName: "Hina Farooq",
     doctorId: "d-6",
     doctorName: "Omar Farooq",
-    date: "2026-07-05",
+    date: "2026-07-07",
     time: "09:30 AM",
     status: "completed",
+    visitType: "walk-in",
     reason: "General checkup",
   },
 ];
